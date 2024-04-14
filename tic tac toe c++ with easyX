@@ -1,0 +1,138 @@
+#include<graphics.h>
+#include<iostream>
+char broad_data[3][3] = { {'-','-','-'},{'-','-','-'}, {'-','-','-'} };
+char currect_piece = 'o';
+bool checkwin(char c) //胜利检测
+{
+	if (broad_data[0][0] == c && broad_data[0][1] == c && broad_data[0][2] == c)
+		return true;
+	if (broad_data[1][0] == c && broad_data[1][1] == c && broad_data[1][2] == c)
+		return true;
+	if (broad_data[2][0] == c && broad_data[2][1] == c && broad_data[2][2] == c)
+		return true;
+	if (broad_data[0][0] == c && broad_data[1][0] == c && broad_data[2][0] == c)
+		return true;
+	if (broad_data[0][1] == c && broad_data[1][1] == c && broad_data[2][1] == c)
+		return true;
+	if (broad_data[0][2] == c && broad_data[1][2] == c && broad_data[2][2] == c)
+		return true;
+	if (broad_data[0][0] == c && broad_data[1][1] == c && broad_data[2][2] == c)
+		return true;
+	if (broad_data[0][2] == c && broad_data[1][1] == c && broad_data[2][0] == c)
+		return true;
+
+	return false;
+};
+bool checkdraw()//平局检测
+{
+	for (size_t i = 0; i < 3; i++)
+	{
+		for (size_t j = 0; j < 3; j++)
+		{
+			if (broad_data[i][j] == '-')
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+void drawbroad()//绘制棋盘
+{
+	line(200, 0, 200, 600);
+	line(400, 0, 400, 600);
+	line(0, 200, 600, 200);
+	line(0, 400, 600, 400);
+}
+void drawpiece()//绘制棋子
+{
+	for (size_t i = 0; i < 3; i++)
+	{
+		for (size_t j = 0; j < 3; j++)
+		{
+			switch (broad_data[i][j] )
+			{
+			case 'o':
+				circle(200 * i + 100, 200 * j + 100, 100);
+				break;
+			case 'x':
+				line(200 * i, 200 * j, 200 * i + 200, 200 * j + 200);
+				line(200 * i, 200 * j + 200, 200 * i + 200, 200 * j);
+				break;
+			case '-':
+				break;
+			default :
+				break;
+
+			}
+		}
+	}
+}
+void drawtips()//绘制提示信息
+{
+	TCHAR str[64];
+	_stprintf_s(str, _T("当前的棋子类型为:%c"), currect_piece);
+	settextcolor(RGB(225, 175, 45));
+	outtextxy(0, 0, str);
+}
+int main()
+{
+	initgraph(600, 600);
+	bool running = true;
+	ExMessage msg; //获取鼠标消息的变量
+	BeginBatchDraw();
+	while (running)
+	{
+		DWORD start_time = GetTickCount();
+		while (peekmessage(&msg))
+		{
+			if (msg.message == WM_LBUTTONDOWN)
+			{
+				int x = msg.x / 200;
+				int y = msg.y / 200;
+				//落子
+				if (broad_data[x][y] == '-')
+				{
+					broad_data[x][y] = currect_piece;
+					//切换棋子类型
+					if (currect_piece == 'o')
+						currect_piece = 'x';
+					else
+						currect_piece = 'o';
+				}
+
+		    }
+
+		}
+		cleardevice();
+		drawbroad();
+		drawpiece();
+		drawtips();
+
+		FlushBatchDraw();
+		if (checkwin('o'))
+		{
+			MessageBox(GetHWnd(), _T("o玩家胜利"), _T("游戏结束"), MB_OK);
+			running = false;
+		}
+		else if (checkwin('x'))
+		{
+			MessageBox(GetHWnd(), _T("x玩家胜利"), _T("游戏结束"), MB_OK);
+			running = false;
+		}
+		else if (checkdraw())
+		{
+			MessageBox(GetHWnd(), _T("游戏平局"), _T("游戏结束"), MB_OK);
+			running = false;
+		}
+		DWORD end_time = GetTickCount();
+		DWORD delta_time = end_time - start_time;
+
+		if (delta_time < 1000 / 60)
+		{
+			Sleep(1000 / 60 - delta_time);
+		}
+	}
+	EndBatchDraw();
+	return 0;
+}
